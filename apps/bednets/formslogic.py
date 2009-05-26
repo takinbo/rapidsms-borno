@@ -7,7 +7,7 @@ from apps.reporters.models import *
 from apps.form.formslogic import FormsLogic
 import re
 
-class NigeriaFormsLogic(FormsLogic):
+class BednetsFormsLogic(FormsLogic):
     ''' This class will hold the nigeria-specific forms logic.
         I'm not sure whether this will be the right structure
         this was just for getting something hooked up '''
