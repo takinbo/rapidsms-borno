@@ -27,7 +27,7 @@ class NetDistribution(models.Model):
     
     class Meta:
         # FIXME tell django the old table name (since app has been renamed)
-        db_table = "nigeria_netdistribution"
+        db_table = "bednets_netdistribution"
 
         # define a permission for this app to use the @permission_required
         # decorator in bednet's views
@@ -80,4 +80,4 @@ class CardDistribution(models.Model):
                 "people": sum(all.values_list("people", flat=True))}
     class Meta:
         # FIXME tell django the old table name (since app has been renamed)
-        db_table = "nigeria_carddistribution"
+        db_table = "bednets_carddistribution"
