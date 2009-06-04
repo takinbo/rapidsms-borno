@@ -2,9 +2,14 @@
 # vim: ai ts=4 sts=4 et sw=4
 
 
-import os, re
+import os, sys, re
 from datetime import datetime
 from django.db import models
+try:
+    import mptt
+except ImportError:
+    print "You'll require DJANGO-MPTT (>= 0.3pre) http://code.google.com/p/django-mptt/ to use the reporters app."
+    sys.exit(1)
 
 from apps.patterns.models import Pattern
 
@@ -42,28 +47,6 @@ class LocationType(models.Model):
         return self.name
     
 
-class RecursiveManager(models.Manager):
-    """Provides a method to flatten a recursive model (a model which has a ForeignKey field linked back
-       to itself), in addition to the usual models.Manager methods. This Manager queries the database
-       only once (unlike select_related), and sorts them in-memory. Obivously, this efficiency comes
-       at the cost local inefficiency -- O(n^2) -- but that's still preferable to recursively querying
-       the database."""
-    
-    def flatten(self, via_field="parent_id"):
-        all_objects = list(self.all())
-        
-        def pluck(pk=None, depth=0):
-            output = []
-            
-            for object in all_objects:
-                if getattr(object, via_field) == pk:
-                    output += [object] + pluck(object.pk, depth+1)
-                    object.depth = depth
-            
-            return output
-        return pluck()
-
-
 class Location(models.Model):
     """A location.  Locations have a name, an optional type, and optional geographic information."""
     name = models.CharField(max_length=160, help_text="Name of location")
@@ -72,41 +55,6 @@ class Location(models.Model):
     parent = models.ForeignKey("Location", related_name="children", null=True, blank=True, help_text="The parent location of this")
     latitude = models.DecimalField(max_digits=8, decimal_places=6, null=True, blank=True, help_text="The physical latitude of this location")
     longitude = models.DecimalField(max_digits=8, decimal_places=6, null=True, blank=True, help_text="The physical longitude of this location")
-    objects = RecursiveManager()
-
-    def ancestors(self, include_self=False):
-        """Returns all of the parent locations of this location,
-           optionally including itself in the output. This is
-           very inefficient, so consider caching the output."""
-        locs = [self] if include_self else []
-        loc = self
-        
-        # keep on iterating
-        # until we return
-        while True:
-            locs.append(loc)
-            loc = loc.parent
-            
-            # are we at the top?
-            if loc is None:
-                return locs
-    
-    def descendants(self, include_self=False):
-        """Returns all of the locations which are descended from this location,
-           optionally including itself in the output. This is very inefficient
-           (it recurses once for EACH), so consider caching the output."""
-        locs = [self] if include_self else []
-        
-        for loc in self.children.all():
-            locs.extend(loc.descendants(True))
-        
-        return locs
-        
-    def top_children(self):
-        # this is a pretty silly way to provide easy access to the first N children
-        # inside a template
-        count = 10
-        return self.children.all()[0:10]
 
     def one_contact(self, role, display=False):
         def __get_one(contacts):
@@ -148,13 +96,12 @@ class Location(models.Model):
     def __unicode__(self):
         return self.name
 
+mptt.register(Location)
 
 class ReporterGroup(models.Model):
     title       = models.CharField(max_length=30, unique=True)
     parent      = models.ForeignKey("self", related_name="children", null=True, blank=True)
     description = models.TextField(blank=True)
-    objects     = RecursiveManager()
-    
     
     class Meta:
         verbose_name = "Group"
@@ -163,6 +110,7 @@ class ReporterGroup(models.Model):
     def __unicode__(self):
         return self.title
 
+mptt.register(ReporterGroup)
 
 class Reporter(models.Model):
     """This model represents a KNOWN person, that can be identified via
@@ -446,3 +394,4 @@ class PersistantConnection(models.Model):
         for pc in PersistantConnection.objects.filter(reporter=self.reporter):
             pc.preferred = True if pc == self else False
             pc.save()
+
