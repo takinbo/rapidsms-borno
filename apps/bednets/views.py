@@ -183,6 +183,18 @@ def supply_summary(req, frm, to, range):
 
 def bednets_summary(req, locid=1):
     #Declarations
+
+    bar_data=[]
+    expected_data=[]
+    nets_data=[]
+    discrepancy_data = []
+    labels=[]
+    loc_children=[]
+    time_data=[]
+    type = ""
+    index = 0
+    pie_data=[]
+    parent=None
     try: 
         location = Location.objects.get(pk=locid)
         parent = location.parent
@@ -244,6 +256,20 @@ def bednets_summary(req, locid=1):
 
 def coupons_summary(req, locid=1):
     #Declarations
+
+    bar_data=[]
+    settlements_data=[]
+    coupon_data=[]
+    people_data = []
+    labels=[]
+    loc_children=[]
+    time_data=[]
+    location_type = ""
+    type = ""
+    index = 0
+    pie_data=[]
+    parent = None
+
     try: 
         location = Location.objects.get(pk=locid)
         parent = location.parent
@@ -260,6 +286,7 @@ def coupons_summary(req, locid=1):
         settlements_data = []
         labels = []
         type = ""
+        bar_data = []
 
         for child in location.children.all():
             #TODO: Generating time-based plots, Uncomment #people, coupons, settlements, timeinfo = _get_card_distribution_data(child)

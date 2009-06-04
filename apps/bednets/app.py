@@ -48,6 +48,8 @@ class App(rapidsms.app.App):
                 # using the keyworder parser
                 results = self.kw.match(self, message.text)
                 if results:
+#                    print "I am priting Result here"
+ #                   print results
                     func, captures = results
                     # if a function was returned, then a this message
                     # matches the handler _func_. call it, and short-

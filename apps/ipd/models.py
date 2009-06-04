@@ -70,8 +70,8 @@ class Shortage(models.Model):
     connection = models.ForeignKey(PersistantConnection, null=True, blank=True)
     location = models.ForeignKey(Location)
     time = models.DateTimeField()
-    reason = models.CharField(blank=True, null=True, max_length=1, choices=NC_REASONS, help_text="Reported commodity with shortage")
     domain = models.ForeignKey(Domain)
+    commodity = models.CharField(max_length=10)
 
 
     def __unicode__(self):
