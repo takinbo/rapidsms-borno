@@ -140,7 +140,7 @@ def pilot_summary():
     # called to fetch and assemble the
     # data structure for each pilot ward
     def __ward_data(ward):
-        locations = ward.descendants(True)
+        locations = ward.get_descendants(True)
         reports = CardDistribution.objects.filter(location__in=locations)
         nets_reports = NetDistribution.objects.filter(location__in=locations)
         style = "" 
