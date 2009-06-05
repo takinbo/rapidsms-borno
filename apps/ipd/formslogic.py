@@ -15,33 +15,36 @@ class IPDFormsLogic(FormsLogic):
     # this is a simple structure we use to describe the forms.  
     # maps token names to db names
     _form_lookups = {
-                     "report" : {
-                               "class" : Report,
-                               "display" : "Report",
-                               "fields" : (
-                                           ("location", "location"), 
-                                           ("immunized", "immunized"), 
-                                           ("notimmunized", "notimmunized"), 
-                                           ("vaccines", "vaccines"),
-                                           )
-                               },
-                     "nc" : {"class" : NonCompliance, 
-                              "display" : "Non Compliance",
-                              "fields" : (
-                                          ("location", "location"), 
-                                          ("reason", "reason"), 
-                                          )
-                              },
+        "report" : {
+            "class" : Report,
+            "display" : "Report",
+            "fields": (
+                ("location", "location"),
+                ("immunized", "immunized"),
+                ("notimmunized", "notimmunized"),
+                ("vaccines", "vaccines"),
+            )
+        },
 
-                     "shortage" : {"class" : Shortage, 
-                              "display" : "Shortage",
-                              "fields" : (
-                                          ("location", "location"), 
-                                          ("commodity", "commodity"), 
-                                          )
-                              }
-                     }
-        
+        "nc" : {
+            "class" : NonCompliance,
+            "display" : "Non Compliance",
+            "fields": (
+                ("location", "location"),
+                ("reason", "reason"),
+            )
+        },
+
+        "shortage" : {
+            "class" : Shortage,
+            "display" : "Shortage",
+            "fields" : (
+                ("location", "location"),
+                ("commodity", "commodity"),
+            )
+        }
+    }
+    
     _foreign_key_lookups = {"Location" : "code" }
 
     def validate(self, *args, **kwargs):
@@ -50,6 +53,7 @@ class IPDFormsLogic(FormsLogic):
         # in case we need help, build a valid reminder string
         # TODO put this in the db!
         if form_entry.form.code.abbreviation == "report":
+            required = ['location', 'immunized', 'notimmunized', 'vaccines']
             data = form_entry.to_dict()
 
             # check that ALL FIELDS were provided
@@ -82,23 +86,10 @@ class IPDFormsLogic(FormsLogic):
                 errors = "The following fields are required: " + ", ".join(req_token_names)
                 return [errors]
             return None
-        
     
-
     def actions(self, *args, **kwargs):
         message = args[0]
         form_entry = args[1]
-
-        data = form_entry.rep_data
-        data["location"] = Location.objects.get(code__iexact=data["location"])
-        rep = Reporter(**data)
-        conn = PersistantConnection.from_message(message)
-        message.respond("Hello %s!  Thank you from %s %s."\
-                                % (rep.first_name, rep.location, rep.location.type), StatusCodes.OK)
-
-            
-
-            # TODO: proper (localized?) messages here
 
         if self._form_lookups.has_key(form_entry.form.code.abbreviation):
             to_use = self._form_lookups[form_entry.form.code.abbreviation]
@@ -125,6 +116,9 @@ class IPDFormsLogic(FormsLogic):
             # joins the inner list on "=" and the outer on ", " so we get 
             # attr1=value1, attr2=value2
             response = response + ", ".join(["=".join(t) for t in attrs])
-            if not instance.reporter:
-                response = response + ". Please register your phone"
+            
+            # Since we are not expecting reporters to pre-register, we
+            # should suppress generating this.
+            # if not instance.reporter:
+            #    response = response + ". Please register your phone"
             message.respond(response, StatusCodes.OK)
