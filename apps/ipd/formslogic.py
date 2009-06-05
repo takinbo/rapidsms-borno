@@ -4,6 +4,7 @@
 from models import *
 from rapidsms.message import StatusCodes
 from apps.reporters.models import *
+from apps.notificator.models import *
 from apps.form.formslogic import FormsLogic
 import re
 
@@ -32,6 +33,7 @@ class IPDFormsLogic(FormsLogic):
             "fields": (
                 ("location", "location"),
                 ("reason", "reason"),
+                ("cases","cases"),
             )
         },
 
@@ -99,12 +101,14 @@ class IPDFormsLogic(FormsLogic):
             instance = self._model_from_form(message, form_entry, form_class, dict(field_list), self._foreign_key_lookups)
             instance.time = message.date
             
+
+
             # if the reporter isn't set then populate the connection object.
             # this means that at least one (actually exactly one) is set
             # the method above sets this property in the instance
             # if it was found.
             if not hasattr(instance, "reporter") or not instance.reporter:
-                instance.connection = message.persistant_connection
+                instance.connection = message.persistant_connection if message.persistant_connection else None
                 response = ""
             # personalize response if we have a registered reporter
             else:
@@ -121,4 +125,24 @@ class IPDFormsLogic(FormsLogic):
             # should suppress generating this.
             # if not instance.reporter:
             #    response = response + ". Please register your phone"
+            
+            shortage_message = MessageWaiting()
+            shortage_message.reporter = instance.reporter
+            print "This is the reporter %s" % instance.reporter
+            shortage_message.connection = instance.connection
+            shortage_message.time = instance.time
+            shortage_message.status = "I"
+
+            if form_entry.form.code.abbreviation == "shortage":
+                message_to_send = "there is a shortage of IPV in %s %s, reported by %s" % (instance.location, instance.location.type, instance.reporter)
+
+                shortage_message.type = "S"
+                shortage_message.text_message = message_to_send
+            
+            elif form_entry.form.code.abbreviation == "nc":
+                message_to_send = "there is a Non Compliance report from %s %s, reported by %s(%s)" % (instance.location, instance.location.type, instance.reporter, instance.reporter.connection().identity)
+                shortage_message.type = "N"
+                shortage_message.text_message = message_to_send
+
+            shortage_message.save()
             message.respond(response, StatusCodes.OK)

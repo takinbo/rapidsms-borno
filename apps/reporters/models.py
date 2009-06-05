@@ -122,7 +122,7 @@ class Reporter(models.Model):
     alias      = models.CharField(max_length=20, unique=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name  = models.CharField(max_length=30, blank=True)
-    groups     = models.ManyToManyField(ReporterGroup, blank=True)
+    groups     = models.ManyToManyField(ReporterGroup, related_name="reporters", blank=True)
     
     # here are some fields that don't belong here
     location   = models.ForeignKey("Location", related_name="reporters", null=True, blank=True)
