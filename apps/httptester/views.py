@@ -46,9 +46,19 @@ def proxy(req, number, message):
     # build the url to the http server running
     # in apps.ajax.app.App via conf hackery
     conf = app_conf("httptester")
+    print conf
+    if conf and conf.has_key("host"):
+        host = conf["host"]
+    else:
+        host = "localhost"
+
+    if conf and conf.has_key("port"):
+        port = conf["port"]
+    else:
+        port = 8080
     url = "http://%s:%s/%s/%s" % (
-        conf["host"], 
-        conf["port"],
+        host, 
+        port,
         urllib2.quote(number), 
         urllib2.quote(message))
     
