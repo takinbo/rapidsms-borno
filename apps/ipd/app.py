@@ -3,7 +3,6 @@
 
 import re
 from datetime import date, datetime
-
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 import rapidsms
@@ -14,7 +13,6 @@ from formslogic import *
 import apps.form.app as form_app
 
 from apps.form.models import Domain
-
 
 class App(rapidsms.app.App):
 
@@ -28,7 +26,7 @@ class App(rapidsms.app.App):
         # which registers the regex and function that this will dispatch to 
         self._form_app.add_message_handler_to(self)
         # this tells the form app that this is also a form handler 
-        self._form_app.add_form_handler("IPDC", IPDFormsLogic())
+        self._form_app.add_form_handler("ipd", IPDFormsLogic())
 
     def parse(self, message):
         self.handled = False
@@ -80,9 +78,6 @@ class App(rapidsms.app.App):
         message.respond("HELP!")
         self.handled = True
     
-    
-    
-    
     # <DOMAIN> REGISTER <LOCATION> <ROLE> <PASSWORD> <NAME> ---------
     
     # since we want to capture all messages starting with "<DOMAIN> REGISTER"
@@ -101,12 +96,12 @@ class App(rapidsms.app.App):
 
     @kw("(whatever)")
     def alert(self, message, notice):
-        ''' todo 
-        reporter = self.__identify(message.connection, "alerting")
-        Notification.objects.create(reporter=reporter, notice=notice)
-        message.respond("Thanks, %s. Your supervisor has been alerted." % (reporter.first_name))
-        self.handled = True
-        '''
+        # TODO:
+        # reporter = self.__identify(message.connection, "alerting")
+        # Notification.objects.create(reporter=reporter, notice=notice)
+        # message.respond("Thanks, %s. Your supervisor has been alerted." % (reporter.first_name))
+        # self.handled = True
+        
         pass
     
     def add_message_handler(self, regex, function):

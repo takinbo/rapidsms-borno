@@ -94,7 +94,7 @@ class Location(models.Model):
         return Reporter.objects.filter(location=self)
 
     def __unicode__(self):
-        return self.name
+        return "%s %s" % (self.name, self.type.name.upper())
 
 mptt.register(Location)
 
