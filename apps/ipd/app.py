@@ -12,7 +12,6 @@ from rapidsms.parsers.keyworder import *
 from models import *
 from formslogic import *
 import apps.form.app as form_app
-import apps.supply.app as supply_app
 
 from apps.form.models import Domain
 
@@ -23,17 +22,13 @@ class App(rapidsms.app.App):
     kw = Keyworder()
     
     def start(self):
-        # initialize the forms app for nigeria
+        # initialize the forms app for Nigeria IPDC
         self._form_app = form_app.App(self.router)
         # this tells the form app to add itself as a message handler 
         # which registers the regex and function that this will dispatch to 
         self._form_app.add_message_handler_to(self)
         # this tells the form app that this is also a form handler 
-        self._form_app.add_form_handler("bednets", BednetsFormsLogic())
-        # initialize the supply app
-        self._supply_app = supply_app.App("Bednets Supplies", self.router)
-        # this tells the supply app to register with the forms app as a form handler
-        self._supply_app.add_form_handler_to(self._form_app)
+        self._form_app.add_form_handler("IPDC", IPDFormsLogic())
 
     def parse(self, message):
         self.handled = False
@@ -48,8 +43,6 @@ class App(rapidsms.app.App):
                 # using the keyworder parser
                 results = self.kw.match(self, message.text)
                 if results:
-#                    print "I am priting Result here"
- #                   print results
                     func, captures = results
                     # if a function was returned, then a this message
                     # matches the handler _func_. call it, and short-
@@ -127,9 +120,3 @@ class App(rapidsms.app.App):
         if hasattr(self, "_form_app"):
             return self._form_app
 
-    @property
-    def supply_app(self):
-        if hasattr(self, "_supply_app"):
-            return self._supply_app
-
-    
