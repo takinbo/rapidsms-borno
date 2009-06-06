@@ -39,9 +39,10 @@ class NonCompliance(models.Model):
     location = models.ForeignKey(Location)
     time = models.DateTimeField()
     reason = models.CharField(blank=True, null=True, max_length=1, choices=NC_REASONS, help_text="This is the reason for non-compliance")
+    cases = models.PositiveIntegerField()
 
     def __unicode__(self):
-        return "%s (%s) %s" % (self.location, self.reporter, self.reason)
+        return "%s (%s) %s %s" % (self.location, self.reporter, self.reason, self.cases)
 
     @staticmethod
     def summed_data(location):
