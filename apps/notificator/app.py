@@ -71,39 +71,27 @@ class App (rapidsms.app.App):
             # in the database, and send them
             for message_waiting in MessageWaiting.objects.filter(status="I"):
                 self.info("Sending (%s) alert.", str(message_waiting))
-                if message_waiting.type == "S":
-                    db_connection = message_waiting.get_connection()
-                    if db_connection is not None:
-                        db_backend = db_connection.backend
-                        # we need to get the real backend from the router
-                        # to actually send it
+                db_connection = message_waiting.get_connection()
+                if db_connection is not None:
+                    db_backend = db_connection.backend
+                    real_backend = self.router.get_backend(db_backend.slug)
+                    
 
-                        real_backend = self.router.get_backend(db_backend.slug)
-
-                        #we also want to obtain the list of key persons to recieve this alerts
-                        #TODO: retreive real key users here, remove static key user used for testing
-                        receivers_groups = [] 
+                    #receivers = ReporterGroup.objects.get(title="Commodity Control").reporters.all()
                         
-                        #we want to send responses to targetted groups based on alerts they are expected to act upon
-                        
-#                        for group in ReporterGroup.objects.all():
-#                            receivers_groups.append(group.reporters.all())
-
-                        receivers = ReporterGroup.objects.get(title="Commodity Control").reporters.all()
-                        
-                    	if real_backend:
-                            for receiver in receivers:
-                                connection = Connection(real_backend, receiver.connection().identity)
-                                message_to_send = "Hello %s, %s" % (receiver.alias, message_waiting.text_message)
-                                alert_msg = Message(connection, message_to_send)
-                                self.router.outgoing(alert_msg)
-                    	else:
+                    if real_backend:
+                        for receiver in receivers:
+                            connection = Connection(real_backend, receiver.connection().identity)
+                            message_to_send = "Hello %s, %s" % (receiver.alias, message_waiting.text_message)
+                            alert_msg = Message(connection, message_to_send)
+                            self.router.outgoing(alert_msg)
+                    else:
                             # TODO: should we fail harder here?  This will permanently
                         	# disable responses to this message which is bad.  
-                            self.error("Can't find backend %s.  Messages will not be sent")
+                        self.error("Can't find backend %s.  Messages will not be sent")
                             # mark the original message as sent
-                        message_waiting.status="S"
-                        message_waiting.save()
+                    message_waiting.status="S"
+                    message_waiting.save()
                 
                 if message_waiting.type == "N":
                     db_connection = message_waiting.get_connection()

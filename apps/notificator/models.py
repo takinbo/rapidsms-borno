@@ -21,12 +21,10 @@ class MessageWaiting(models.Model):
     )
     # This is the model the message that comes in to be sent out by the sender_loop
     # TODO: this should be a dual-non-null key if that is possible
-    reporter = models.ForeignKey(Reporter, null=True, blank=True)
-    connection = models.ForeignKey(PersistantConnection, null=True, blank=True)
-    time = models.DateTimeField()
-    text_message = models.CharField(max_length=160)
-    status = models.CharField(max_length=1, choices=STATUS_TYPES)
-    type = models.CharField(max_length=1, choices=MESSAGE_TYPES)
+    connection = models.ForeignKey(PersistantConnection, null=True, blank=True, help_text="This contains the backend and contact details of the Reporter")
+    time = models.DateTimeField(help_text="The time Report came in to RapidSMS")
+    text_message = models.CharField(max_length=180, help_text="Text Message that will be sent to Key Persons")
+    status = models.CharField(max_length=1, choices=STATUS_TYPES, help_text="Status of the message (either I, N or S)")    
 
     
     @classmethod
@@ -41,8 +39,8 @@ class MessageWaiting(models.Model):
             **msg.persistance_dict)
 
     def get_connection(self):
-        if self.reporter:
-             return self.reporter.connection()
+        if self.connection:
+             return self.connection()
         return self.connection
 
     def __unicode__(self):
