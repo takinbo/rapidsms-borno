@@ -55,27 +55,6 @@ class NonCompliance(models.Model):
         else:
             return NonCompliance.NC_REASONS[8][1]
 
-class Alert(models.Model):
-    '''Model for storing alerts once they've gone out.
-    This should eventually be on it's own app'''
-    reporter = models.ForeignKey(Reporter)
-    notice = models.CharField(max_length=160)
-    received = models.DateTimeField(auto_now_add=True)
-    #resolved = models.DateTimeField(blank=True, null=True)
-    #domain = models.ForeignKey(Domain)
-
-    # TODO do we want to save a resolver?
-    # Probably Not. I commented out the two lines above since
-    # I feel saving the domain isn't necessary - The app is 
-    # already a table prefix and will not be confused with 
-    # another Alert or Report in another app. Secondly, there
-    # is no way of tracking issue resolution so no need to have
-    # it in the DB
-
-    def __unicode__(self):
-        return "%s (%s)" % (self.reporter, self.received)
-    
-
 class Shortage(models.Model):
     '''Model for storing shortage reports'''
     # I'm suspecting that this might be a better way to store
