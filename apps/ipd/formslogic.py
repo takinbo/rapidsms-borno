@@ -132,7 +132,7 @@ class IPDFormsLogic(FormsLogic):
             alert_message.status = "I"
             
             if form_entry.form.code.abbreviation == "shortage":
-                message_to_send = "there is a shortage of IPV in %s %s, reported by %s" % (instance.location, instance.location.type, instance.reporter)
+                message_to_send = "there is a shortage of OPV in %s %s, reported by %s" % (instance.location, instance.location.type, instance.reporter)
 
                 alert_message.type = "S"
                 alert_message.text_message = message_to_send
