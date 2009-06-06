@@ -126,23 +126,21 @@ class IPDFormsLogic(FormsLogic):
             # if not instance.reporter:
             #    response = response + ". Please register your phone"
             
-            shortage_message = MessageWaiting()
-            shortage_message.reporter = instance.reporter
-            print "This is the reporter %s" % instance.reporter
-            shortage_message.connection = instance.connection
-            shortage_message.time = instance.time
-            shortage_message.status = "I"
-
+            alert_message = MessageWaiting()
+            alert_message.connection = instance.connection
+            alert_message.time = instance.time
+            alert_message.status = "I"
+            
             if form_entry.form.code.abbreviation == "shortage":
                 message_to_send = "there is a shortage of IPV in %s %s, reported by %s" % (instance.location, instance.location.type, instance.reporter)
 
-                shortage_message.type = "S"
-                shortage_message.text_message = message_to_send
+                alert_message.type = "S"
+                alert_message.text_message = message_to_send
             
             elif form_entry.form.code.abbreviation == "nc":
                 message_to_send = "there is a Non Compliance report from %s %s, reported by %s(%s)" % (instance.location, instance.location.type, instance.reporter, instance.reporter.connection().identity)
-                shortage_message.type = "N"
-                shortage_message.text_message = message_to_send
+                alert_message.type = "N"
+                alert_message.text_message = message_to_send
 
-            shortage_message.save()
+            alert_message.save()
             message.respond(response, StatusCodes.OK)
