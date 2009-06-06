@@ -116,7 +116,7 @@ class App (rapidsms.app.App):
                     	if real_backend:
                             for receiver in receivers:
                                 connection = Connection(real_backend, receiver.connection().identity)
-                                message_to_send = "Hello %s, %s" % (receiver.alias, message_waiting.text_message)
+                                message_to_send = "Hello %s, %s" % (receiver.first_name, message_waiting.text_message)
                                 alert_msg = Message(connection, message_to_send)
                                 self.router.outgoing(alert_msg)
                     	else:
