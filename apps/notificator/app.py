@@ -82,14 +82,14 @@ class App (rapidsms.app.App):
 
                         #we also want to obtain the list of key persons to recieve this alerts
                         #TODO: retreive real key users here, remove static key user used for testing
-                        receivers_groups = [] 
+                        receivers_groups = []
                         
                         #we want to send responses to targetted groups based on alerts they are expected to act upon
                         
 #                        for group in ReporterGroup.objects.all():
 #                            receivers_groups.append(group.reporters.all())
 
-                        receivers = ReporterGroup.objects.get(title="Commodity Control").reporters.all()
+                        receivers = ReporterGroup.objects.get(title="ipd_notification").reporters.all()
                         
                     	if real_backend:
                             for receiver in receivers:
@@ -100,7 +100,7 @@ class App (rapidsms.app.App):
                     	else:
                             # TODO: should we fail harder here?  This will permanently
                         	# disable responses to this message which is bad.  
-                            self.error("Can't find backend %s.  Messages will not be sent")
+                            self.error("Can't find backend %s. Messages will not be sent")
                             # mark the original message as sent
                         message_waiting.status="S"
                         message_waiting.save()
@@ -123,7 +123,7 @@ class App (rapidsms.app.App):
 #                        for group in ReporterGroup.objects.all():
 #                            receivers_groups.append(group.reporters.all())
 
-                        receivers = ReporterGroup.objects.get(title="NonCompliance").reporters.all()
+                        receivers = ReporterGroup.objects.get(title="ipd_notification").reporters.all()
                         
                     	if real_backend:
                             for receiver in receivers:
