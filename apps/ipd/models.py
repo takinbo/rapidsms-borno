@@ -30,8 +30,8 @@ class NonCompliance(models.Model):
             ('5', 'Political Differences'),
             ('6', 'No Care Giver Consent'),
             ('7', 'Unhappy With Immunization Personnel'),
-            ('8', 'Too many Rounds'),
-            ('9', 'Reason Not given'),
+            ('8', 'Too Many Rounds'),
+            ('9', 'Reason Not Given'),
     )
      
     reporter = models.ForeignKey(Reporter, null=True, blank=True)
@@ -39,13 +39,21 @@ class NonCompliance(models.Model):
     location = models.ForeignKey(Location)
     time = models.DateTimeField()
     reason = models.CharField(blank=True, null=True, max_length=1, choices=NC_REASONS, help_text="This is the reason for non-compliance")
+    cases = models.PositiveIntegerField()
 
     def __unicode__(self):
-        return "%s (%s) %s" % (self.location, self.reporter, self.reason)
+        return "%s (%s) %s %s" % (self.location, self.reporter, self.reason, self.cases)
 
     @staticmethod
     def summed_data(location):
         pass
+
+    @staticmethod
+    def get_reason(reason):
+        if int(reason) in range(1, 9):
+            return NonCompliance.NC_REASONS[int(reason) - 1][1]
+        else:
+            return NonCompliance.NC_REASONS[8][1]
 
 class Alert(models.Model):
     '''Model for storing alerts once they've gone out.
@@ -79,7 +87,8 @@ class Shortage(models.Model):
     )
     reporter = models.ForeignKey(Reporter, null=True, blank=True)
     # What's the case for storing the connection since the report has one?
-    # connection = models.ForeignKey(PersistantConnection, null=True, blank=True)
+    # TODO: This has to go!
+    connection = models.ForeignKey(PersistantConnection, null=True, blank=True)
     location = models.ForeignKey(Location)
     time = models.DateTimeField()
     commodity = models.CharField(max_length=10)
