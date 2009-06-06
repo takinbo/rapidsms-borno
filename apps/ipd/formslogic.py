@@ -101,8 +101,6 @@ class IPDFormsLogic(FormsLogic):
             instance = self._model_from_form(message, form_entry, form_class, dict(field_list), self._foreign_key_lookups)
             instance.time = message.date
             
-
-
             # if the reporter isn't set then populate the connection object.
             # this means that at least one (actually exactly one) is set
             # the method above sets this property in the instance
@@ -115,11 +113,16 @@ class IPDFormsLogic(FormsLogic):
                 response = "Thank you %s. " % (instance.reporter.first_name)
             instance.save()
             response = response + "Received report for %s %s: " % (form_entry.domain.code.abbreviation.upper(), to_use["display"].upper())
-            # this line pulls any attributes that are present into 2-item lists
-            attrs = [[attr[1], str(getattr(instance, attr[1]))] for attr in field_list if hasattr(instance, attr[1])]
-            # joins the inner list on "=" and the outer on ", " so we get 
+            # this line pulls any attributes that are present into a dictionary
+            attrs = dict([[attr[1], str(getattr(instance, attr[1]))] for attr in field_list if hasattr(instance, attr[1])])
+            # Instead of having the reason code sent back to the reporter,
+            # retrieve and set a more descriptive reason
+            if attrs.has_key("reason"):
+                attrs['reason'] = NonCompliance.get_reason(attrs['reason'])
+            
+            # concatenates the inner list on "=" and joins the outer on ", " so we get 
             # attr1=value1, attr2=value2
-            response = response + ", ".join(["=".join(t) for t in attrs])
+            response = response + ", ".join([ key + "=" + value for (key, value) in attrs.items() ])
             
             # Since we are not expecting reporters to pre-register, we
             # should suppress generating this.
@@ -132,13 +135,15 @@ class IPDFormsLogic(FormsLogic):
             alert_message.status = "I"
             
             if form_entry.form.code.abbreviation == "shortage":
-                message_to_send = "there is a shortage of OPV in %s %s, reported by %s" % (instance.location, instance.location.type, instance.reporter)
+                # I think it's much easier to tell someone the number is 0803.* instead of +234803.*
+                message_to_send = "there is a shortage of %s in %s, reported by %s (%s)" % (instance.commodity.upper(), instance.location, instance.reporter, re.sub("^\+?234", "0", instance.reporter.connection().identity))
 
                 alert_message.type = "S"
                 alert_message.text_message = message_to_send
             
             elif form_entry.form.code.abbreviation == "nc":
-                message_to_send = "there is a Non Compliance report from %s %s, reported by %s(%s)" % (instance.location, instance.location.type, instance.reporter, instance.reporter.connection().identity)
+                # You should look at the comment above
+                message_to_send = "there is a non compliance report from %s (Reason: %s, Cases: %s), reported by %s (%s)" % (instance.location, NonCompliance.get_reason(instance.reason), instance.cases, instance.reporter, re.sub("^\+?234", "0", instance.reporter.connection().identity))
                 alert_message.type = "N"
                 alert_message.text_message = message_to_send
 

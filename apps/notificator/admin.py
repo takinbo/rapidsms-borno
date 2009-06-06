@@ -5,7 +5,7 @@ from django.contrib import admin
 from apps.notificator.models import *
 
 class NotificatorAdmin(admin.ModelAdmin):
-    list_display = [ 'connection', 'time', 'status', 'text_message']
+    list_display = ['connection', 'time', 'status', 'text_message']
     date_hierarchy = 'time'
 
 

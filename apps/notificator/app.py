@@ -111,7 +111,7 @@ class App (rapidsms.app.App):
 #                        for group in ReporterGroup.objects.all():
 #                            receivers_groups.append(group.reporters.all())
 
-                        receivers = ReporterGroup.objects.get(title="NonCompliance").reporters.all()
+                        receivers = ReporterGroup.objects.get(title="ipd_notification").reporters.all()
                         
                     	if real_backend:
                             for receiver in receivers:
