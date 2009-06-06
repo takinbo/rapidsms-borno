@@ -30,8 +30,8 @@ class NonCompliance(models.Model):
             ('5', 'Political Differences'),
             ('6', 'No Care Giver Consent'),
             ('7', 'Unhappy With Immunization Personnel'),
-            ('8', 'Too many Rounds'),
-            ('9', 'Reason Not given'),
+            ('8', 'Too Many Rounds'),
+            ('9', 'Reason Not Given'),
     )
      
     reporter = models.ForeignKey(Reporter, null=True, blank=True)
@@ -46,6 +46,13 @@ class NonCompliance(models.Model):
     @staticmethod
     def summed_data(location):
         pass
+
+    @staticmethod
+    def get_reason(reason):
+        if int(reason) in range(1, 9):
+            return NonCompliance.NC_REASONS[int(reason) - 1][1]
+        else:
+            return NonCompliance.NC_REASONS[8][1]
 
 class Alert(models.Model):
     '''Model for storing alerts once they've gone out.
