@@ -134,13 +134,13 @@ class IPDFormsLogic(FormsLogic):
             shortage_message.status = "I"
 
             if form_entry.form.code.abbreviation == "shortage":
-                message_to_send = "there is a shortage of IPV in %s %s, reported by %s" % (instance.location, instance.location.type, instance.reporter)
+                message_to_send = "there is a shortage of %s in %s, reported by %s (%s)" % (instance.commodity.upper(), instance.location, instance.reporter, instance.reporter.connection().identity)
 
                 shortage_message.type = "S"
                 shortage_message.text_message = message_to_send
             
             elif form_entry.form.code.abbreviation == "nc":
-                message_to_send = "there is a Non Compliance report from %s %s, reported by %s(%s)" % (instance.location, instance.location.type, instance.reporter, instance.reporter.connection().identity)
+                message_to_send = "there is a non compliance report from %s (Reason: %s, Cases: %s), reported by %s (%s)" % (instance.location, NonCompliance.get_reason(instance.reason), instance.cases, instance.reporter, instance.reporter.connection().identity)
                 shortage_message.type = "N"
                 shortage_message.text_message = message_to_send
 
