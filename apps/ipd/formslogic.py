@@ -4,7 +4,7 @@
 from models import *
 from rapidsms.message import StatusCodes
 from apps.reporters.models import *
-from apps.notificator.models import *
+from apps.notifier.models import *
 from apps.form.formslogic import FormsLogic
 import re
 

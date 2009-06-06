@@ -3,23 +3,23 @@
 
 import rapidsms
 import threading
-from apps.notificator.models import *
+from apps.notifier.models import *
 from apps.reporters.models import *
 from rapidsms.message import Message, StatusCodes
 from rapidsms.connection import Connection
 import time
 
 class App (rapidsms.app.App):
-    '''The notificator app sends out blasts to notification 
+    '''The notifier app sends out blasts to notification 
 	officals who are meant to respond to certain situation 
 	alerts eg Shortage of commodity eg OPV''' 
     
     
     def start (self):
-        """Configuration of notificator app in the start phase."""
+        """Configuration of notifier app in the start phase."""
         # Start the Responder Thread -----------------------------------------
         
-        self.info("[Notificator] Starting up...")
+        self.info("[Notifier] Starting up...")
         # interval to check for sending (in seconds)
 
         polling_interval = 10

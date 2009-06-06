@@ -2,11 +2,11 @@
 # vim: ai ts=4 sts=4 et sw=4
 
 from django.contrib import admin
-from apps.notificator.models import *
+from apps.notifier.models import *
 
-class NotificatorAdmin(admin.ModelAdmin):
+class NotifierAdmin(admin.ModelAdmin):
     list_display = ['connection', 'time', 'status', 'text_message']
     date_hierarchy = 'time'
 
 
-admin.site.register(MessageWaiting, NotificatorAdmin)
+admin.site.register(MessageWaiting, NotifierAdmin)
