@@ -87,7 +87,8 @@ class Shortage(models.Model):
     )
     reporter = models.ForeignKey(Reporter, null=True, blank=True)
     # What's the case for storing the connection since the report has one?
-    # connection = models.ForeignKey(PersistantConnection, null=True, blank=True)
+    # TODO: This has to go!
+    connection = models.ForeignKey(PersistantConnection, null=True, blank=True)
     location = models.ForeignKey(Location)
     time = models.DateTimeField()
     commodity = models.CharField(max_length=10)
