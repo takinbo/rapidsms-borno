@@ -8,6 +8,7 @@ from apps.reporters.models import *
 from rapidsms.message import Message, StatusCodes
 from rapidsms.connection import Connection
 import time
+from datetime import datetime
 
 class App (rapidsms.app.App):
     '''The notifier app sends out blasts to notification 
@@ -22,7 +23,7 @@ class App (rapidsms.app.App):
         self.info("[Notifier] Starting up...")
         # interval to check for sending (in seconds)
 
-        polling_interval = 10
+        polling_interval = 5
 
         # start a thread for sending message
         sender_thread = threading.Thread(
@@ -47,85 +48,41 @@ class App (rapidsms.app.App):
         pass
     
     @classmethod
-    def message_counter(self, status, type='S'):
-        # returns JUST the number of incoming, sent, or not-sent(for one reason or the other) messages
-        self.status = status
-        self.type = type
-    	return MessageWaiting.objects.filter(status=self.status, type=self.type).count()
-    
-    
-    @classmethod
-    def message(self, status, type='S'):
-
+    def message(self, status):
         # return all of the message whose status has been specified
         self.status = status
-        self.type = type
-        return MessageWaiting.objects.filter(status=self.status, type=self.type)
+        return MessageWaiting.objects.filter(status=self.status)
     
     
     # Sender Thread --------------------
-    def sender_loop(self, seconds=10):
+    def sender_loop(self, seconds=5):
+        '''Routine to fetch pending messages and push them to the router
+           for sending through the backend.'''
         self.info("Starting sender...")
         while True:
             # look for any new waiting messages
-            # in the database, and send them
-            for message_waiting in MessageWaiting.objects.filter(status="I"):
+            # in the database to be sent now, and send them
+            for message_waiting in MessageWaiting.objects.filter(status="I", time__lte=datetime.now()):
                 self.info("Sending (%s) alert.", str(message_waiting))
-                db_connection = message_waiting.get_connection()
-                if db_connection is not None:
-                    db_backend = db_connection.backend
-                    real_backend = self.router.get_backend(db_backend.slug)
-                    
+                db_backend = message_waiting.backend
+                real_backend = self.router.get_backend(db_backend.slug)
 
-                    #receivers = ReporterGroup.objects.get(title="Commodity Control").reporters.all()
-                        
-                    if real_backend:
-                        for receiver in receivers:
-                            connection = Connection(real_backend, receiver.connection().identity)
-                            message_to_send = "Hello %s, %s" % (receiver.alias, message_waiting.text_message)
-                            alert_msg = Message(connection, message_to_send)
-                            self.router.outgoing(alert_msg)
-                    else:
-                            # TODO: should we fail harder here?  This will permanently
-                        	# disable responses to this message which is bad.  
-                        self.error("Can't find backend %s.  Messages will not be sent")
-                            # mark the original message as sent
+                if real_backend:
+                    connection = Connection(real_backend, message_waiting.destination)
+                    alert_msg = Message(connection, message_waiting.text_message)
+                    self.router.outgoing(alert_msg)
+
+                    # mark message as sent
                     message_waiting.status="S"
-                    message_waiting.save()
+                else:
+                    # TODO: should we fail harder here?  This will permanently
+                    # disable responses to this message which is bad.  
+                    self.error("Can't find backend %s.  Messages will not be sent", real_backend)
+                    # mark the message as not sent
+                    message_waiting.status="N"
                 
-                if message_waiting.type == "N":
-                    db_connection = message_waiting.get_connection()
-                    if db_connection is not None:
-                        db_backend = db_connection.backend
-                        # we need to get the real backend from the router
-                        # to actually send it
-
-                        real_backend = self.router.get_backend(db_backend.slug)
-
-                        #we also want to obtain the list of key persons to recieve this alerts
-                        #TODO: retreive real key users here, remove static key user used for testing
-                        receivers_groups = [] 
-                        
-                        #we want to send responses to targetted groups based on alerts they are expected to act upon
-                        
-#                        for group in ReporterGroup.objects.all():
-#                            receivers_groups.append(group.reporters.all())
-
-                        receivers = ReporterGroup.objects.get(title="ipd_notification").reporters.all()
-                        
-                    	if real_backend:
-                            for receiver in receivers:
-                                connection = Connection(real_backend, receiver.connection().identity)
-                                message_to_send = "Hello %s, %s" % (receiver.first_name, message_waiting.text_message)
-                                alert_msg = Message(connection, message_to_send)
-                                self.router.outgoing(alert_msg)
-                    	else:
-                            # TODO: should we fail harder here?  This will permanently
-                        	# disable responses to this message which is bad.  
-                            self.error("Can't find backend %s.  Messages will not be sent")
-                            # mark the original message as sent
-                        message_waiting.status="S"
-                        message_waiting.save()
-    #wait until it's time to check again
+                message_waiting.save()
+                
+            # wait until it's time to check again
             time.sleep(seconds)
 
