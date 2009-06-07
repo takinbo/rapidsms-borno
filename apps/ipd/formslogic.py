@@ -129,23 +129,54 @@ class IPDFormsLogic(FormsLogic):
             # if not instance.reporter:
             #    response = response + ". Please register your phone"
             
-            alert_message = MessageWaiting()
-            alert_message.connection = instance.connection
-            alert_message.time = instance.time
-            alert_message.status = "I"
             
-            if form_entry.form.code.abbreviation == "shortage":
-                # I think it's much easier to tell someone the number is 0803.* instead of +234803.*
-                message_to_send = "there is a shortage of %s in %s, reported by %s (%s)" % (instance.commodity.upper(), instance.location, instance.reporter, re.sub("^\+?234", "0", instance.reporter.connection().identity))
+            '''The following routines will retrieve the alerting groups and send alerts
+               to the members of the group'''
+            if form_entry.form.code.abbreviation == "shortage" or form_entry.form.code.abbreviation == "nc":
+                # Retrieve all the alert_groups attached to this form
+                for alert_group in Alerting.objects.filter(form=form_entry.form):
+                    # Now we need to retrieve reporters having ancestors equal to the
+                    # highest hierarchy defined in the group
+                    location_ancestor = instance.location.get_ancestors().get(type=alert_group.location_hierarchy)
 
-                alert_message.type = "S"
-                alert_message.text_message = message_to_send
+                    # retrieve all group members having the same location_ancestor
+                    alert_reporters = []
+                    for group in alert_group.groups.all():
+                        for alert_reporter in group.reporters.all():
+                            try:
+                                if alert_reporter.location == location_ancestor or alert_reporter.location.get_ancestors().get(type=alert_group.location_hierarchy) == location_ancestor:
+                                    alert_reporters.append(alert_reporter)
+                                    print "Appended: ", alert_reporter
+                                # This could be related to the ancestors of the object itself
+                                
+                                #if alert_reporter.location.get_ancestors().get(type=alert_group.location_hierarchy) == location_ancestor or alert_reporter.location.get(type=alert_group.location_hierarchy) == location_ancestor:
+                                 #   alert_reporters.append(alert_reporter)
+                            except Location.DoesNotExist:
+                                pass
+
+                for notified_reporter in alert_reporters: 
+                    # I think it's much easier to tell someone the number is 0803.* instead of +234803.*
+                    if form_entry.form.code.abbreviation == "shortage":  
+                        # If the reporter exists, we generate an alert message with the reporters information
+                        # if not, we just report the reporter's phone number
+                        if instance.reporter:
+                            message_to_send = "Hello %s, there is a shortage of %s in %s, reported by %s (%s)" % (notified_reporter.first_name, instance.commodity.upper(), instance.location, instance.reporter, re.sub("^\+?234", "0", instance.reporter.connection().identity))
+                        else:
+                            message_to_send = "Hello %s, there is a shortage of %s in %s, reported by (%s)" % (notified_reporter.first_name, instance.commodity.upper(), instance.location, re.sub("^\+?234", "0", message.connection.identity))
+                            
+                    elif form_entry.form.code.abbreviation == "nc":
+                        if instance.reporter:
+                            message_to_send = "Hello %s, there is a non-compliance report from %s (Reason:%s, Cases:%s), reported by %s (%s)" % (notified_reporter.first_name, instance.location, NonCompliance.get_reason(instance.reason), instance.cases, instance.reporter, re.sub("^\+?234", "0", instance.reporter.connection().identity))
+                        else:
+                            message_to_send = "Hello %s, there is a non-compliance report from %s (Reason:%s, Cases:%s), reported by (%s)" % (notified_reporter.first_name, instance.location, NonCompliance.get_reason(instance.reason), instance.cases, re.sub("^\+?234", "0", message.connection.identity))
+
+                    alert_message = MessageWaiting()
+                    alert_message.backend = instance.connection.backend
+                    alert_message.time = instance.time
+                    alert_message.destination = notified_reporter.connection().identity
+                    alert_message.status = "I"
+                    alert_message.text_message = message_to_send
             
-            elif form_entry.form.code.abbreviation == "nc":
-                # You should look at the comment above
-                message_to_send = "there is a non compliance report from %s (Reason: %s, Cases: %s), reported by %s (%s)" % (instance.location, NonCompliance.get_reason(instance.reason), instance.cases, instance.reporter, re.sub("^\+?234", "0", instance.reporter.connection().identity))
-                alert_message.type = "N"
-                alert_message.text_message = message_to_send
-
-            alert_message.save()
+                    alert_message.save()
+            
             message.respond(response, StatusCodes.OK)

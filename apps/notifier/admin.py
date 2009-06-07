@@ -4,9 +4,9 @@
 from django.contrib import admin
 from apps.notifier.models import *
 
-class NotifierAdmin(admin.ModelAdmin):
-    list_display = ['connection', 'time', 'status', 'text_message']
+class MessageWaitingAdmin(admin.ModelAdmin):
+    list_display = ['backend', 'destination', 'text_message', 'time', 'status']
     date_hierarchy = 'time'
 
-
-admin.site.register(MessageWaiting, NotifierAdmin)
+admin.site.register(MessageWaiting, MessageWaitingAdmin)
+admin.site.register(Alerting)
