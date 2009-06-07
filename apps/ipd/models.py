@@ -49,12 +49,25 @@ class NonCompliance(models.Model):
         pass
 
     @staticmethod
+    def non_compliance_total(location):
+        all = NonCompliance.objects.all().filter(location__pk=location.pk)
+
+        return {"cases": sum(all.values_list("cases", flat=True))
+        }
+
+
+    @staticmethod
     def get_reason(reason):
         if int(reason) in range(1, 9):
             return NonCompliance.NC_REASONS[int(reason) - 1][1]
         else:
             return NonCompliance.NC_REASONS[8][1]
+    def get_reason_total(reason, location):
+        all = NonCompliance.objects.all().filter(location__code__startswith=location.code, reason=reason)
 
+        reason_total = sum(all.values_list('cases', flat=True))
+        return reason_total
+        
 class Shortage(models.Model):
     '''Model for storing shortage reports'''
     # I'm suspecting that this might be a better way to store

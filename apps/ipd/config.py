@@ -3,5 +3,4 @@
 
 title = "IPD"
 tab_link = "/ipd"
-a = "Alpha"
-b = "Beta"
+
