@@ -105,8 +105,9 @@ class IPDFormsLogic(FormsLogic):
             # this means that at least one (actually exactly one) is set
             # the method above sets this property in the instance
             # if it was found.
+            instance.connection = message.persistant_connection if message.persistant_connection else None
+
             if not hasattr(instance, "reporter") or not instance.reporter:
-                instance.connection = message.persistant_connection if message.persistant_connection else None
                 response = ""
             # personalize response if we have a registered reporter
             else:
@@ -146,11 +147,6 @@ class IPDFormsLogic(FormsLogic):
                             try:
                                 if alert_reporter.location == location_ancestor or alert_reporter.location.get_ancestors().get(type=alert_group.location_hierarchy) == location_ancestor:
                                     alert_reporters.append(alert_reporter)
-                                    print "Appended: ", alert_reporter
-                                # This could be related to the ancestors of the object itself
-                                
-                                #if alert_reporter.location.get_ancestors().get(type=alert_group.location_hierarchy) == location_ancestor or alert_reporter.location.get(type=alert_group.location_hierarchy) == location_ancestor:
-                                 #   alert_reporters.append(alert_reporter)
                             except Location.DoesNotExist:
                                 pass
 
