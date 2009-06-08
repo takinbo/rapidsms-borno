@@ -8,10 +8,7 @@ register = template.Library()
 
 from datetime import datetime, timedelta
 from apps.reporters.models import *
-from apps.supply.models import *
 from apps.ipd.models import *
-from apps.bednets import constants
-from apps.bednets.models import *
 
 @register.inclusion_tag("ipd/partials/recent.html")
 def recent_reporters(number=4):
@@ -142,31 +139,19 @@ def pilot_summary():
     # data structure for each pilot ward
     def __ward_data(ward):
         locations = ward.get_descendants(True)
-        reports = CardDistribution.objects.filter(location__in=locations)
-        nets_reports = NetDistribution.objects.filter(location__in=locations)
         nc_reports = NonCompliance.objects.filter(location__in=locations)
         immunization_reports = Report.objects.filter(location__in=locations)
-
-        style = "" 
-        if reports.count() == 0:
-            style = "warning" 
 
         return {
             "name":          ward.name,
             "contact":       ward.one_contact('WS', True),
-            "reports":       reports.count(),
             "immunization_reports": immunization_reports.count(),
-            "nets_reports":  nets_reports.count(),
             "nc_reports":    nc_reports.count(),
-            "netcards":      sum(reports.values_list("distributed", flat=True)),
             "immunized":     sum(immunization_reports.values_list("immunized", flat=True)),
             "notimmunized":  sum(immunization_reports.values_list("notimmunized", flat=True)),
             "vaccines":      sum(immunization_reports.values_list("vaccines", flat=True)),
             "cases":         sum(nc_reports.values_list("cases", flat=True)),
-            "nets":          sum(nets_reports.values_list("distributed", flat=True)),
-            "beneficiaries": sum(reports.values_list("people", flat=True)),
-            "class":         style}
-    
+       } 
     # called to fetch and assemble the
     # data structure for each pilot LGA
     def __lga_data(lga):
@@ -178,9 +163,6 @@ def pilot_summary():
         }
 
         wards = lga.children.all()
-        reporters = Reporter.objects.filter(location__in=wards)
-        supervisors = reporters.filter(role__code__iexact="WS")
-        summary = "%d supervisors in %d wards" % (supervisors.count(), wards.count())
         
         ward_data = map(__ward_data, wards)
         def __wards_total(key):
@@ -189,48 +171,17 @@ def pilot_summary():
         def __stats(key):
             return int(float(__wards_total(key)) / projections[key][str(lga.name)] * 100) if (__wards_total(key) > 0) else 0 
 
-        # This method to return % of nets/netcards issued. It is believed there could be a better method.
-        def __nets_stats(key):
-            return int (float(__wards_total(key)/__wards_total("netcards")) * 100 ) if (__wards_total(key) > 0 ) else 0
-            
         return {
             "name":                     lga.name,
-            "summary":                  summary,
-            #"netcards_projected":       int(projections['netcards'][str(lga.name)]),
-            "netcards_total":           int(__wards_total("netcards")),
             "population_projected":  int(projections['population'][str(lga.name)]),
             "immunized_total":      int(__wards_total("immunized")),
             "notimmunized_total":   int(__wards_total("notimmunized")),
             "vaccines_used":             int(__wards_total("vaccines")),
             "wards":                    ward_data,
-            "reports":                  __wards_total("reports"),
-            "netcards":                 __wards_total("netcards"),
-            "beneficiaries":            __wards_total("beneficiaries"),
-            "nets_total":               __wards_total("nets"),
-            "nets_reports":             __wards_total("nets_reports"),
-            "netcards_stats":           __stats("netcards"),
-            "nets_stats":               __nets_stats("nets"),
-            "beneficiaries_stats":      __stats("beneficiaries")
         }
 
     return { "pilot_lgas": map(__lga_data, lgas) }
 
-
-@register.inclusion_tag("ipd/partials/logistics.html")
-def logistics_summary():
-
-    # called to fetch and assemble the data structure
-    # for each LGA, containing the flow of stock
-    def __lga_data(lga):
-        incoming = PartialTransaction.objects.filter(destination=lga, type__in=["R", "I"]).order_by("-date")
-        outgoing = PartialTransaction.objects.filter(origin=lga, type__in=["R", "I"]).order_by("-date")
-        return {
-            "name":         unicode(lga),
-            "transactions": incoming | outgoing, 
-            "logistician": lga.one_contact('SM', True)}
-    
-    # process and return data for ALL LGAs for this report
-    return { "lgas": map(__lga_data, LocationType.objects.get(name="LGA").locations.filter(code__in=constants.KANO_PILOT_LGAS).all()) }
 
 @register.inclusion_tag("ipd/partials/immunization_summary_charts.html")
 def immunization_summary_charts():
@@ -258,9 +209,6 @@ def immunization_summary_charts():
 
     pilot_lgas = summary['pilot_lgas']
     for lga in pilot_lgas:
-        #netcards_projected.append("[%d, %d]" % (pilot_lgas.index(lga) * 3 + 1, lga['netcards_projected']))
-        netcards_total.append("[%d, %d]" % (pilot_lgas.index(lga) * 3 + 2, lga['netcards_total']))
-        nets_total.append("[%d, %d]" % (pilot_lgas.index(lga) * 3 + 3, lga['nets_total']))
         population_projected.append("[%f, %f]" % (pilot_lgas.index(lga) * 4 + 0.5, lga['population_projected']))
         immunized_total.append("[%d, %d]" % (pilot_lgas.index(lga) * 4 + 1, lga['immunized_total']))
         notimmunized_total.append("[%f, %f]" % (pilot_lgas.index(lga) * 4 + 1.5, lga['notimmunized_total']))
