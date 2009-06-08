@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}IPD Dashboard{% endblock %}
+{% block javascripts %}
+<script type="text/javascript" src="/static/webui/javascripts/jquery.flot.js"></script>
+<script type="text/javascript" src="/static/webui/javascripts/jquery.flot.pie.pack.js"></script>
+<!--[if IE]><script type="text/javascript" src="/static/webui/javascripts/excanvas.pack.js"></script>
+<![endif]-->
+{% endblock %}
+{% load cache %}
+{% load ipd %}
+
+{% block content %}
+{# cache content of dashboard for one hour #}
+{% cache 0 dashboard %}
+<div class="tmp">
+
+
+<div class="split-3">
+	<div class="left">
+		{% immunization_summary_charts %}
+	</div>
+	<div class="mid">
+		{% daily_progress %}
+	</div>
+	<div class="right">
+		{% ipd_stats %}
+	</div>
+	<div class="clear-hack"></div>
+</div>
+
+<div class="split">
+	<div class="left">
+	</div>
+	<div class="right">
+	</div>
+	<div class="clear-hack"></div>
+</div>
+
+
+</div>
+{% endcache %}
+{% endblock %}

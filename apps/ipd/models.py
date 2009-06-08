@@ -55,6 +55,11 @@ class NonCompliance(models.Model):
         return {"cases": sum(all.values_list("cases", flat=True))
         }
 
+    def get_reason(reason):
+        if int(reason) in range(1, 9):
+            return NonCompliance.NC_REASONS[int(reason) - 1][1]
+        else:
+            return NonCompliance.NC_REASONS[8][1]
 
     @staticmethod
     def get_reason(reason):

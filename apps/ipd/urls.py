@@ -6,8 +6,7 @@ from django.conf.urls.defaults import *
 import apps.ipd.views as views
 
 urlpatterns = patterns('',
-    url(r'^ipd/?$', views.index),
+    url(r'^ipd/?$', views.dashboard),
     url(r'^ipd/summary/(?P<locid>\d*)/?$', views.index),
     url(r'^ipd/compliance/summary/(?P<locid>\d*)/?$', views.compliance_summary),
-
 )

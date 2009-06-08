@@ -1,0 +1,46 @@
+<script type="text/javascript" src="/static/ipd/javascripts/jquery.flot.pie.pack.js"></script>
+<script language="javascript">
+$(document).ready(function(){
+	var immunization_data = [{ bars: { show: true, barWidth:0.5 }, data: {{population_projected|safe}}, label: 'Projected'},
+                     		  { bars: { show: true, barWidth:0.5 }, data: {{immunized_total|safe}}, label: 'Immunized'},
+                     		  { bars: { show: true, barWidth:0.5 }, data: {{notimmunized_total|safe}}, label: 'Not Im.'},
+                     		  { bars: { show: true, barWidth:0.5 }, data: {{vaccines_used|safe}}, label: 'Vaccines'}];
+
+
+	var immunization_options = { grid: { show: true, clickable: true },
+			 xaxis: { ticks: {{lgas|safe}}, tickFormatter: 'string'},
+			 legend: {noColumns:2, position:'ne', 
+			 margin:0, 
+			 container : $('#immunization_legend'),
+			 labelFormatter: 
+				function( label ) 
+				{
+					 return "<span style='font-size:9px;'>" + label + "</span>";
+		            	}  
+			        }
+		     };
+
+	var options_no_legend = { bar: immunization_options, legend: { show: false }};
+	$.plot($('#immunization_chart'), immunization_data, immunization_options);
+
+	var compliance_data = {{pie_data|safe}}
+	var compliance_options ={show: true, showLabel: false, legend:{position:'nw'}, position:'ne'}
+	var grid_options = { hoverable : true, clickable: true}
+var compliance_options_legend = { pie : compliance_options, grid: grid_options, legend: { show: true, noColumns:2, container : $('#pie_legend') } }
+
+	$.plot($("#pie_chart"), compliance_data, compliance_options_legend);	
+	
+	
+});
+</script>
+<h2>Immnization Summaries</h2>
+<div id="immunization_chart" style="width:100%;height:15em">
+</div>
+<div id="immunization_legend" style="width:100%;height:6em;margin-top:1em">
+</div>
+
+<h2>Non Compliance Summaries</h2>
+<div id="pie_chart" style="width:100%;height:15em;margin-bottom:2em;margin-top:1em;margin-left:5em">
+</div>
+
+<div id="pie_legend" style="width:100%;height:15em;margin-bottom:2em"></div>

@@ -25,6 +25,10 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 #Views for handling summary of Reports Displayed as Location Tree
+
+def dashboard(req):
+	return render_to_response(req, "dashboard.html")
+
 def index(req, locid=None):
     if not locid:
         locid = 1
@@ -33,7 +37,6 @@ def index(req, locid=None):
         location.non_compliance_total  =  NonCompliance.non_compliance_total(location)
     except Location.DoesNotExist:
         pass
-
     return render_to_response(req,"ipd/index.html", {'location':location})
 
 def compliance_summary(req, locid=1):
@@ -48,6 +51,7 @@ def compliance_summary(req, locid=1):
     index = 0
     pie_data=[]
     parent=None
+    location=None
     NC_REASONS = (
              ('1', 'OPV Safety'),
              ('2', 'Child Sick'),
@@ -68,6 +72,7 @@ def compliance_summary(req, locid=1):
         for reason in NC_REASONS:
             
             pie_data.append({"label": reason, "data":NonCompliance.get_reason_total(reason, location)})
+            print pie_data
 
     except:
         pass
