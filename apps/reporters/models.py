@@ -2,23 +2,12 @@
 # vim: ai ts=4 sts=4 et sw=4
 
 
-import os, sys, re
+import os, re
 from datetime import datetime
 from django.db import models
-try:
-    import mptt
-except ImportError:
-    print "You'll require DJANGO-MPTT (>= 0.3pre) http://code.google.com/p/django-mptt/ to use the reporters app."
-    sys.exit(1)
+from contrib import mptt
 
 from apps.patterns.models import Pattern
-
-# load the rapidsms configuration, for BackendManager
-# to check which backends are currently running
-from rapidsms.config import Config
-conf = Config(os.environ["RAPIDSMS_INI"])
-
-
 
 class Role(models.Model):
     """Basic representation of a role that someone can have.  For example,
