@@ -147,5 +147,5 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'mptt',
+    'contrib.mptt',
 ] + rapidsms_apps
