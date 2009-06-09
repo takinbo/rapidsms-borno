@@ -5,7 +5,7 @@
 import os, re
 from datetime import datetime
 from django.db import models
-from contrib import mptt
+import mptt
 
 from apps.patterns.models import Pattern
 
