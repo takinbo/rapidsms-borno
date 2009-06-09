@@ -10,20 +10,9 @@ from datetime import datetime, timedelta
 from apps.reporters.models import *
 from apps.ipd.models import *
 
-@register.inclusion_tag("ipd/partials/recent.html")
-def recent_reporters(number=4):
-    last_connections = PersistantConnection.objects.filter(reporter__isnull=False).order_by("-last_seen")[:number]
-    last_reporters = [conn.reporter for conn in last_connections]
-    return { "reporters": last_reporters }
-
-
 @register.inclusion_tag("ipd/partials/stats.html")
 def ipd_stats():
     return { "stats": [
-#        {
-#            "caption": "Callers",
-#            "value":   PersistantConnection.objects.count()
-#        },
         {
             "caption": "Reporters",
             "value":   Reporter.objects.count()
@@ -52,10 +41,6 @@ def ipd_stats():
             "caption": "Active Responders",
             "value":   len(Reporter.objects.filter(location__type=LocationType.objects.get(name__startswith="LGA")))
         },
-#        {
-#            "caption": "Coupon Recipients",
-#            "value":   sum(CardDistribution.objects.values_list("people", flat=True))
-#        }
     ]}
 
 
@@ -131,7 +116,6 @@ def daily_progress():
 def pilot_summary():
     
     # fetch all of the LGAs that we want to display
-    lga_names_kano = ["DAWAKIN KUDU", "GARUN MALLAM", "KURA", "KANO MUNICIPAL"]
     lga_names = ["JERE", "MAIDUGURI"]
     lgas = LocationType.objects.get(name="LGA").locations.filter(name__in=lga_names)
     
