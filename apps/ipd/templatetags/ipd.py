@@ -68,7 +68,7 @@ def daily_progress():
     # Kano Municipal    402,919
     # Kura              159,394
     recipient_target = 939172.0
-    
+    population_target = 190440.0
     
     for d in range(0, (end - start).days):
         date = start + timedelta(d)
@@ -95,7 +95,7 @@ def daily_progress():
             data.update({
                 "reports_perc":    int((data["reports"]    / report_target)    * 100) if (data["reports"]    > 0) else 0,
                 "immunized_perc":    int((data["immunized"]    / coupon_target)    * 100) if (data["immunized"]    > 0) else 0,
-                "notimmunized_perc":    int((data["notimmunized"]    / recipient_target)    * 100) if (data["notimmunized"]    > 0) else 0,
+                "notimmunized_perc":    int((data["notimmunized"]    / population_target)    * 100) if (data["notimmunized"]    > 0) else 0,
             })
         days.append(data)
     
@@ -103,7 +103,7 @@ def daily_progress():
     netcards_stats = int(float(total_immunized) / coupon_target * 100) if (total_immunized > 0) else 0
 
     total_notimmunized = sum(Report.objects.all().values_list("notimmunized", flat=True))
-    notimmunized_stats = int((float(total_notimmunized) / recipient_target) * 100) if (total_notimmunized > 0) else 0
+    notimmunized_stats = int((float(total_notimmunized) / population_target) * 100) if (total_notimmunized > 0) else 0
 
     return { "days": days, 
             "netcards_stats": netcards_stats, 
