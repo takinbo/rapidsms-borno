@@ -94,19 +94,17 @@ def daily_progress():
         
             data.update({
                 "reports_perc":    int((data["reports"]    / report_target)    * 100) if (data["reports"]    > 0) else 0,
-                "immunized_perc":    int((data["immunized"]    / coupon_target)    * 100) if (data["immunized"]    > 0) else 0,
+                "immunized_perc":    int((data["immunized"]    / population_target)    * 100) if (data["immunized"]    > 0) else 0,
                 "notimmunized_perc":    int((data["notimmunized"]    / population_target)    * 100) if (data["notimmunized"]    > 0) else 0,
             })
         days.append(data)
     
     total_immunized = sum(Report.objects.all().values_list("immunized", flat=True))
-    netcards_stats = int(float(total_immunized) / coupon_target * 100) if (total_immunized > 0) else 0
 
     total_notimmunized = sum(Report.objects.all().values_list("notimmunized", flat=True))
     notimmunized_stats = int((float(total_notimmunized) / population_target) * 100) if (total_notimmunized > 0) else 0
 
     return { "days": days, 
-            "netcards_stats": netcards_stats, 
             "notimmunized_stats": notimmunized_stats,
             "total_immunized": total_immunized,
             "total_notimmunized": total_notimmunized}
