@@ -103,8 +103,10 @@ def daily_progress():
 
     total_notimmunized = sum(Report.objects.all().values_list("notimmunized", flat=True))
     notimmunized_stats = int((float(total_notimmunized) / population_target) * 100) if (total_notimmunized > 0) else 0
+    immunized_stats = int((float(total_immunized) / population_target) * 100) if (total_immunized > 0) else 0
 
     return { "days": days, 
+            "immunized_stats": immunized_stats,
             "notimmunized_stats": notimmunized_stats,
             "total_immunized": total_immunized,
             "total_notimmunized": total_notimmunized}
