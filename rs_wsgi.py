@@ -4,6 +4,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 sys.path.append(os.path.join(os.path.dirname(__file__),'apps'))
 sys.path.append(os.path.join(os.path.dirname(__file__),'lib'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'lib', 'contrib'))
 
 
 os.environ['RAPIDSMS_INI'] = os.path.join(os.path.dirname(__file__),'rapidsms.ini')
